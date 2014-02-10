@@ -6,7 +6,7 @@
 # This function is a substitution of md5sum -c for OS which couldn't have md5sum
 #
 #
-# Copyright (c) 2011, Joris Berthelot
+# Copyright (c) 2011-2014, Joris Berthelot
 # Joris Berthelot <admin@eexit.net>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -28,9 +28,10 @@
 # SOFTWARE.
 #
 
-VERSION=1.00
-DATE=2011-12-10
+VERSION=2.00
+DATE=2014-02-12
 QUIET=false
+ERROR=0
 
 while getopts ":qhv" OPT; do
     case $OPT in
@@ -62,11 +63,12 @@ while getopts ":qhv" OPT; do
             echo
             echo "AUTHOR"
             echo "\tWritten by Joris Berthelot <admin@eexit.net>"
-            echo "\thttp//www.eexit.net/projects/md5checker.html"
+            echo "\thttps://github.com/eexit/md5checker"
+            echo "\thttp://www.eexit.net/projects/md5checker.html"
             echo
             echo "COPYRIGHT"
             cat << EOT
-        Copyright (c) 2011, Joris Berthelot
+        Copyright (c) 2011-2014, Joris Berthelot
         
         Permission is hereby granted, free of charge, to any person obtaining a copy of
         this software and associated documentation files (the "Software"), to deal in
@@ -109,15 +111,17 @@ for ARG in $*; do
     if [ ! -e "$ARG" ]; then
         if [[ "-q" != "$ARG" ]]; then
             echo "md5checker: "$ARG": No such filename"
+            ERROR=1
         fi
         continue
     fi
     
     # Checkes if file content has at least one checksum pattern
-    if [ 0 -eq "$(grep -csxP "^\w{32}\s(\s|\*).+$" "$ARG")" ]; then
+    if [ 0 -eq "$(grep -csxE "^\w{32}\s(\s|\*).+$" "$ARG")" ]; then
         if ! $QUIET ; then
             echo "[  \033[0;33m!!\033[0m  ] "$ARG": No valid MD5 checksum entry found"
         fi
+        ERROR=1
         continue
     fi
     
@@ -125,10 +129,11 @@ for ARG in $*; do
     while read LINE; do
         
         # Checkes if the current line has a checksum pattern
-        if [[ $(echo "$LINE" | grep -sxP "^\w{32}\s(\s|\*).+$") ]]; then
+        if [[ $(echo "$LINE" | grep -sxE "^\w{32}\s(\s|\*).+$") ]]; then
             
             # Gets the file name of the line
             CFILE=$(echo "$LINE" | cut -c 35-)
+            MD5SUM=$(echo "$LINE" | cut -c -32)
             
             # If the file does not exist
             if [ ! -e "$CFILE" ]; then
@@ -138,18 +143,20 @@ for ARG in $*; do
                 fi
                 continue
             fi
-            
+
             # Checkes if the MD5 sum of the file is the expected one
-            if [[ "$LINE" == $(openssl dgst -md5 -r "$CFILE") ]]; then
+            if [[ "$MD5SUM" == $(md5 -q "$CFILE") ]]; then
                 # If verbose output
                 if ! $QUIET ; then
                     echo "[  \033[0;32mOK\033[0m  ] "$CFILE""
                 fi
             else # File checksum failed
-                echo "[\033[0;31mFAILED\033[0m] "$CFILE""
+                echo "[\033[0;31mFAILED\033[0m] "$CFILE": MD5 sum incorrect"
+                ERROR=1
             fi
             
         fi
     done < $ARG
 done
-exit 0
+
+exit $ERROR
