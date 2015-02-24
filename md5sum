@@ -1,12 +1,12 @@
 #!/bin/sh
 #
-# md5checker.sh
+# md5sum
 #
 #
 # This function is a substitution of md5sum -c for OS which couldn't have md5sum
 #
 #
-# Copyright (c) 2011-2014, Joris Berthelot
+# Copyright (c) 2011-2015, Joris Berthelot
 # Joris Berthelot <admin@eexit.net>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -29,7 +29,7 @@
 #
 
 VERSION=2.00
-DATE=2014-02-12
+DATE=2015-02-25
 QUIET=false
 ERROR=0
 
@@ -39,15 +39,15 @@ while getopts ":qhv" OPT; do
             QUIET=true
             ;;
         v)
-            echo "md5checker -- v$VERSION -- $DATE"
+            echo "md5sum -- v$VERSION -- $DATE"
             exit 0
             ;;
         h)
-            echo "\t\t\tmd5checker -- v$VERSION"
+            echo "\t\t\tmd5sum -- v$VERSION"
             echo
             echo "SYNOPSIS"
-            echo "\tmd5checker [-q] source_file"
-            echo "\tmd5checker [-v] [-h]"
+            echo "\tmd5sum [-q] source_file"
+            echo "\tmd5sum [-v] [-h]"
             echo
             echo "DESCRIPTION"
             echo "\tReads MD5 (128-bits) checksums in the file and compare them to the files"
@@ -63,12 +63,11 @@ while getopts ":qhv" OPT; do
             echo
             echo "AUTHOR"
             echo "\tWritten by Joris Berthelot <admin@eexit.net>"
-            echo "\thttps://github.com/eexit/md5checker"
-            echo "\thttp://www.eexit.net/projects/md5checker.html"
+            echo "\thttps://github.com/eexit/md5sum"
             echo
             echo "COPYRIGHT"
             cat << EOT
-        Copyright (c) 2011-2014, Joris Berthelot
+        Copyright (c) 2011-2015, Joris Berthelot
         
         Permission is hereby granted, free of charge, to any person obtaining a copy of
         this software and associated documentation files (the "Software"), to deal in
@@ -97,8 +96,8 @@ EOT
             echo "Invalid option: -$OPTARG" >&2
             echo
             echo "SYNOPSIS"
-            echo "\tmd5checker [-q] source_file"
-            echo "\tmd5checker [-v] [-h]"
+            echo "\tmd5sum [-q] source_file"
+            echo "\tmd5sum [-v] [-h]"
             exit 0
             ;;
     esac
@@ -110,7 +109,7 @@ for ARG in $*; do
     # Checkes arg filename existence
     if [ ! -e "$ARG" ]; then
         if [[ "-q" != "$ARG" ]]; then
-            echo "md5checker: "$ARG": No such filename"
+            echo "md5sum: "$ARG": No such filename"
             ERROR=1
         fi
         continue

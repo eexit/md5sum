@@ -1,11 +1,20 @@
-# md5checker
+# md5sum for OSX
 
-## Synopsis
+![example.png](example.png)
+		
+## Installation
 
-	md5checker [-q] source_file
-	md5checker [-v] [-h]
+```bash
+sudo curl https://raw.githubusercontent.com/eexit/md5sum/master/md5sum -o /sbin/md5sum
+sudo chmod a+x /sbin/md5sum
+```
 
-## Description
+## Usage
+
+### Synopsis
+
+	md5sum [-q] source_file
+	md5sum [-v] [-h]
 
 Reads MD5 (128-bits) checksums in the file and compare them to the files
 
@@ -18,37 +27,31 @@ Reads MD5 (128-bits) checksums in the file and compare them to the files
 	-v
 		Outputs the version information and exits
 
-## How to generate a standard MD5SUM file
+## How to generate a valid MD5SUMS file
 
-The default OSX `md5` command doesn't provide a way to output standard md5sum file content so here how to:
+The default OSX `md5 -r` command [doesn't generate a valid format](http://blog.eexit.net/sh-md5sum-c-like-for-mac-osx/):
+
+	$ md5 -r LICENSE
+	95baec3fa8136f631e8b7bad5460d7b6 LICENSE
+	# It should output:
+	95baec3fa8136f631e8b7bad5460d7b6  LICENSE
+
+In order to fix this, you can extends the `md5` this way:
+
+	$ md5 -r LICENSE | sed 's/ /  /'
+	95baec3fa8136f631e8b7bad5460d7b6  LICENSE
+
+If you need to generate a valid `MD5SUMS` format for many files in one command:
 
 ```bash
-# md5 default command output:
-~$ md5 LICENSE
-MD5 (LICENSE) = cc569e106f17cd9ad8f5e71a7dcf6155
-# MD5SUM output:
-~$ md5 LICENSE | sed "s/^MD5 (//" | sed "s/) =/ /" | awk '{t=$1;$1=$NF;$NF=" "t}1'
-cc569e106f17cd9ad8f5e71a7dcf6155  LICENSE
+$ find . -not -empty -type f -d 1 | \
+xargs -I %s basename %s | xargs -I %s md5 -r %s | sed 's/ /  /'
+95baec3fa8136f631e8b7bad5460d7b6  LICENSE
+ccbd9f1144351424c0afbc9a9b5df021  md5sum
+f9e4c933069ab3c67006dbbd8e9a8840  README.md
 ```
 
-From now:
-
-```bash
-~$ find . -not -name "MD5SUMS" -not -empty -type f -d 1 | \
-xargs -I %s basename %s | \
-xargs -I %s md5 %s | \
-sed "s/^MD5 (//" | \
-sed "s/) =/ /" | \
-awk '{t=$1;$1=$NF;$NF=" "t}1' \
->> MD5SUMS
-~$ cat MD5SUMS 
-cc569e106f17cd9ad8f5e71a7dcf6155  LICENSE
-fd3f07abc89a9ebb6f66446f22c6fbbc  md5checker.sh
-2b2169220e3e035ccb43e532362d50e3  README.md
-```
-
-## Author
+### Author
 
 Written by Joris Berthelot <admin@eexit.net>  
-https://github.com/eexit/md5checker  
-http://www.eexit.net/projects/md5checker.html
+https://github.com/eexit/md5sum
